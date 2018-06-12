@@ -40,14 +40,21 @@ def select_bounds(ds, bounds):
     # select over x and y axis
     return ds.sel(x=xs, y=ys)
 
-def make_measures_url(url_template, dt, freq, HV, AD):
+def make_measures_url(url_template, res, dt, freq, HV, AD):
     """
     Prepares a url for Measures data to download.
+    url_template - str url with placeholders for date (%Y.%m.%d), resolution (:d, km), date (%Y%j),
+        frequency (str), polarisation ('H'/'V'), ascending/descending path ('A', 'D')
     
     """
     datestr1 = dt.strftime('%Y%j')
     datestr2 = dt.strftime('%Y.%m.%d')
-    return url_template.format(datestr2, datestr1, freq, HV, AD)
+    if str(res) == '25':
+        suffix = 'GRD-RSS'
+    else:
+        suffix = 'SIR-RSS'
+    
+    return url_template.format(datestr2, str(res), datestr1, freq, HV, AD, suffix)
 
 def make_measures_download(download_template, url, username, password):
     return download_template.format(username, password, url)
