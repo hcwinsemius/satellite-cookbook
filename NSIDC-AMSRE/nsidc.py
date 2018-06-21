@@ -1,5 +1,6 @@
 import pyproj
 import xarray as xr
+import numpy as np
 
 def proj_coord(coord, proj_in, proj_out):
     """
@@ -74,3 +75,26 @@ def correct_miss_fill(ds):
         except:
             pass
     return xr.decode_cf(ds)
+
+def c_m_ratio(ds_tb, x, y, x_off=62500, y_off=62500):
+    def cc(ts1, M):
+        coef = np.ma.corrcoef(np.ma.masked_invalid(ts1.values.flatten()), np.ma.masked_invalid(M.values.flatten()))[1][0]
+        return xr.DataArray(coef)
+    ds_tb_sel = ds_tb.sel(x=slice(x-x_off, x+x_off), y=slice(y+y_off, y-y_off))
+    # convert the xarray data-array into a bunch of point time series
+    # select series in (M)easurement location
+    M = ds_tb_sel.sel(x=x, y=y, method='nearest')
+    tb_points = ds_tb_sel.stack(points=('y', 'x')) # .reset_index(['x', 'y'], drop=True) # .transpose('points', 'time')
+    # add a coordinate axis to the points
+    # apply the function over allpoints to calculate the trend at each point
+#     import pdb;pdb.set_trace()
+    coefs = tb_points.groupby('points').apply(cc, M=M)
+    # unstack back to lat lon coordinates
+    coefs_2d = coefs.unstack('points').rename(dict(points_level_0='y', points_level_1='x')) # get the 2d back and rename axes back to x, y
+    # find the x/y index where the correlation is lowest
+    idx_y, idx_x = np.where(coefs_2d==coefs_2d.min())
+    # select  series in (C)alibration location (with lowest correlation)
+    C = ds_tb_sel[:, idx_y, idx_x].squeeze(['x', 'y']).drop(['x', 'y'])  # get rid of the x and y coordinates of calibration pixel
+    # which has the lowest correlation with the point of interest?
+    ratio = C/M
+    return C, M, ratio
