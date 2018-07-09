@@ -86,15 +86,22 @@ def c_m_ratio(ds_tb, x, y, x_off=62500, y_off=62500):
     M = ds_tb_sel.sel(x=x, y=y, method='nearest')
     tb_points = ds_tb_sel.stack(points=('y', 'x')) # .reset_index(['x', 'y'], drop=True) # .transpose('points', 'time')
     # add a coordinate axis to the points
-    # apply the function over allpoints to calculate the trend at each point
+    # apply the function over all points to calculate the trend at each point
 #     import pdb;pdb.set_trace()
     coefs = tb_points.groupby('points').apply(cc, M=M)
     # unstack back to lat lon coordinates
     coefs_2d = coefs.unstack('points').rename(dict(points_level_0='y', points_level_1='x')) # get the 2d back and rename axes back to x, y
+    #LOWEST CALIBRATION
     # find the x/y index where the correlation is lowest
     idx_y, idx_x = np.where(coefs_2d==coefs_2d.min())
     # select  series in (C)alibration location (with lowest correlation)
     C = ds_tb_sel[:, idx_y, idx_x].squeeze(['x', 'y']).drop(['x', 'y'])  # get rid of the x and y coordinates of calibration pixel
     # which has the lowest correlation with the point of interest?
-    ratio = C/M
-    return C, M, ratio
+    ratio = C / M
+    # #MEAN CALIBRATION
+    # # find the x/y index where the correlation is mean
+    # idx_y_mean, idx_x_mean = np.where(coefs_2d==coefs_2d.mean())
+    # # select  series in (C)alibration location (with lowest correlation)
+    # C_mean = ds_tb_sel[:, idx_y_mean, idx_x_mean].squeeze(['x','y']).drop(['x','y'])  # get rid of the x and y coordinates of calibration pixel
+    # ratio_mean = C_mean / M
+    return C, M, ratio #, C_mean, ratio_mean
