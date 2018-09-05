@@ -51,9 +51,11 @@ def make_measures_url(url_template, res, dt, freq, HV, AD):
     datestr1 = dt.strftime('%Y%j')
     datestr2 = dt.strftime('%Y.%m.%d')
     if str(res) == '25':
-        suffix = 'GRD-RSS'
-    else:
-        suffix = 'SIR-RSS'
+        suffix = 'GRD-CSU'
+    #else:
+        #suffix = 'SIR-RSS'
+   # else:
+    #    suffix = 'GRD-RSS'
     
     return url_template.format(datestr2, str(res), datestr1, freq, HV, AD, suffix)
 
