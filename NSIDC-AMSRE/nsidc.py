@@ -161,6 +161,7 @@ def c_m_ratio(ds_tb, x, y, x_off=62500, y_off=62500):
     # find the x/y index where the correlation is lowest
     idx_y, idx_x = np.where(coefs_2d==coefs_2d.min())
     # select  series in (C)alibration location (with lowest correlation)
+    # import pdb;pdb.set_trace()
     C = ds_tb_sel[:, idx_y, idx_x].squeeze(['x', 'y']).drop(['x', 'y'])  # get rid of the x and y coordinates of calibration pixel
     # which has the lowest correlation with the point of interest?
     ratio = C / M
