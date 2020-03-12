@@ -5,6 +5,8 @@ import os
 import subprocess
 import shutil
 import datetime
+from posixpath import join as urljoin
+
 
 def proj_coord(coord, proj_in, proj_out):
     """
@@ -52,9 +54,9 @@ def make_measures_url(date, res, freq, HV, AD):
         frequency (str), polarisation ('H'/'V'), ascending/descending path ('A', 'D')
     
     """
-    url_base = 'https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0630.001'
+    url_base = r'https://n5eil01u.ecs.nsidc.org/MEASURES/NSIDC-0630.001'
     url_folder = '{:s}'
-    url_template = os.path.join(url_base, url_folder,
+    url_template = urljoin(url_base, url_folder,
                                 'NSIDC-0630-EASE2_T{:s}km-AQUA_AMSRE-{:s}-{:s}{:s}-{:s}-{:s}-v1.3.nc')
 
     datestr1 = date.strftime('%Y%j')
@@ -65,7 +67,6 @@ def make_measures_url(date, res, freq, HV, AD):
         #suffix = 'SIR-CSU'
    # else:
     #    suffix = 'GRD-RSS'
-    
     return url_template.format(datestr2, str(res), datestr1, freq, HV, AD, suffix)
 
 def make_measures_download(url, username, password):
